@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRIKE Yield Calculator — How Rich Do You Want to Get?</title>
+<meta name="description" content="Live yield calculator for Strike Finance STRIKE staking. See what your tokens earn as platform volume grows — from new kicks to yacht money.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0E0D;
+  --card: #121817;
+  --card-2: #18201E;
+  --line: #243029;
+  --green: #2EE5A9;
+  --green-dim: #1A8F6A;
+  --green-glow: rgba(46, 229, 169, 0.12);
+  --text: #E8EFEC;
+  --muted: #7A8580;
+  --faint: #4A5450;
+  --amber: #E0A82E;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Space Grotesk', sans-serif;
+  --body: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+
+header { padding: 48px 0 8px; text-align: center; }
+.bolt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-bottom: 18px;
+  box-shadow: 0 0 40px var(--green-glow), 0 0 80px var(--green-glow);
+}
+.bolt svg { width: 26px; height: 26px; }
+h1 {
+  font-family: var(--display);
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+h1 .accent { color: var(--green); }
+.tagline { color: var(--muted); margin-top: 10px; font-size: 15px; }
+
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 36px 0 0;
+}
+.stat { background: var(--card); padding: 16px 18px; text-align: center; }
+.stat .label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.stat .value {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat .value.green { color: var(--green); }
+.stat .sub { font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+
+section { padding: 44px 0 0; }
+.section-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+h2 {
+  font-family: var(--display);
+  font-size: clamp(20px, 3.4vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.section-sub { color: var(--muted); font-size: 14px; max-width: 560px; }
+
+.calc {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 22px;
+}
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+@media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.field-label .live-val {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--green);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+input[type="number"] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 500;
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input[type="number"]:focus { border-color: var(--green); }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+input[type="range"] {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--green) var(--fill, 20%), var(--line) var(--fill, 20%));
+  outline: none;
+  margin: 14px 0 6px;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--green), 0 0 16px var(--green-glow);
+  cursor: grab;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--green); }
+input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 3px solid var(--bg);
+  cursor: grab;
+}
+.slider-marks {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+}
+.scenario-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 5px;
+  background: var(--green-glow);
+  color: var(--green);
+  margin-top: 8px;
+}
+
+.yield-out {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 26px;
+}
+@media (max-width: 560px) { .yield-out { grid-template-columns: 1fr; } }
+.yield-box {
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+}
+.yield-box.primary {
+  border-color: var(--green-dim);
+  background: linear-gradient(180deg, var(--green-glow), var(--card-2));
+}
+.yield-box .y-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.yield-box .y-value {
+  font-family: var(--mono);
+  font-size: clamp(20px, 3.6vw, 28px);
+  font-weight: 700;
+  color: var(--text);
+}
+.yield-box.primary .y-value { color: var(--green); }
+.yield-box .y-sub { font-size: 11px; color: var(--faint); margin-top: 4px; }
+
+.roi-line { margin-top: 16px; text-align: center; font-size: 13px; color: var(--muted); }
+.roi-line strong { color: var(--green); font-family: var(--mono); }
+
+.ladder { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+.rung {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.rung:hover { border-color: var(--green-dim); transform: translateX(4px); }
+.rung.unlocked { border-color: var(--green); background: linear-gradient(90deg, var(--green-glow), var(--card)); }
+.rung .emoji { font-size: 30px; text-align: center; }
+.rung .r-name { font-family: var(--display); font-weight: 700; font-size: 16px; }
+.rung .r-target { font-size: 12px; color: var(--muted); }
+.rung .r-need {
+  font-family: var(--mono);
+  text-align: right;
+  font-size: 15px;
+  font-weight: 700;
+}
+.rung .r-need .n { color: var(--green); }
+.rung .r-need .cost { display: block; font-size: 11px; font-weight: 400; color: var(--faint); margin-top: 2px; }
+.rung .unlocked-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--green);
+  color: var(--bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.table-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 6px 0;
+  margin-top: 22px;
+  overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+th {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-weight: 500;
+  text-align: right;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+th:first-child { text-align: left; }
+td {
+  padding: 12px 16px;
+  text-align: right;
+  font-family: var(--mono);
+  border-bottom: 1px solid var(--line);
+}
+td:first-child { text-align: left; font-family: var(--body); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+tr.highlight td { background: var(--green-glow); }
+td .tier-note { display: block; font-size: 10px; color: var(--faint); font-family: var(--body); font-weight: 400; }
+.green-text { color: var(--green); }
+
+.formula-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 26px;
+  margin-top: 22px;
+}
+.formula-block {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  line-height: 2;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--muted);
+  margin: 14px 0;
+}
+.formula-block .hl { color: var(--green); }
+.assumption-list { list-style: none; margin-top: 14px; }
+.assumption-list li {
+  padding: 8px 0 8px 24px;
+  position: relative;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+.assumption-list li:last-child { border-bottom: none; }
+.assumption-list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-family: var(--mono);
+}
+.assumption-list strong { color: var(--text); }
+
+footer {
+  margin-top: 56px;
+  padding: 28px 0 44px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 12px;
+  color: var(--faint);
+  line-height: 1.9;
+}
+footer a { color: var(--green-dim); text-decoration: none; }
+footer a:hover { color: var(--green); }
+.disclaimer {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 40px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: left;
+}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="bolt" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 2L4.5 13.5H11L9.5 22L19 9.5H12.5L13 2Z" fill="#0A0E0D" stroke="#0A0E0D" stroke-width="1" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h1>How rich do you<br>want to <span class="accent">$STRIKE</span> it?</h1>
+  <p class="tagline">Real-yield calculator for Strike Finance staking. Anchored to live V2 protocol data — fee compression and maker rebates included.</p>
+
+  <div class="stats-strip" id="statsStrip">
+    <div class="stat">
+      <div class="label">V2 All-Time Volume</div>
+      <div class="value" id="statVolume">—</div>
+      <div class="sub">since launch</div>
+    </div>
+    <div class="stat">
+      <div class="label">V2 All-Time Revenue</div>
+      <div class="value" id="statRevenue">—</div>
+      <div class="sub">fees collected</div>
+    </div>
+    <div class="stat">
+      <div class="label">Blended Fee Rate</div>
+      <div class="value green" id="statFeeRate">—</div>
+      <div class="sub">revenue ÷ volume</div>
+    </div>
+    <div class="stat">
+      <div class="label">Current Daily Pace</div>
+      <div class="value green" id="statDaily">—</div>
+      <div class="sub">recent run rate</div>
+    </div>
+    <div class="stat">
+      <div class="label">Staked Supply</div>
+      <div class="value" id="statStaked">—</div>
+      <div class="sub">84.5% participation</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="calculator">
+    <div class="section-label">01 / The Calculator</div>
+    <h2>Your stake. Your scenario. Your yield.</h2>
+    <p class="section-sub">Enter your STRIKE holdings and drag the volume slider to see what the protocol pays you as it grows.</p>
+
+    <div class="calc">
+      <div class="calc-grid">
+        <div>
+          <div class="field-label"><span>Your STRIKE holdings</span></div>
+          <input type="number" id="holdingsInput" value="1000" min="1" step="100" aria-label="Your STRIKE holdings">
+        </div>
+        <div>
+          <div class="field-label">
+            <span>Daily platform volume</span>
+            <span class="live-val" id="volReadout">$3.5M</span>
+          </div>
+          <input type="range" id="volSlider" min="0" max="100" value="23" aria-label="Daily platform volume scenario">
+          <div class="slider-marks">
+            <span>$1M</span><span>$33M</span><span>$100M</span><span>$250M</span>
+          </div>
+          <span class="scenario-tag" id="scenarioTag">Current pace</span>
+        </div>
+      </div>
+
+      <div class="yield-out">
+        <div class="yield-box">
+          <div class="y-label">Daily yield</div>
+          <div class="y-value" id="yieldDaily">$0.00</div>
+          <div class="y-sub">paid in USDM</div>
+        </div>
+        <div class="yield-box primary">
+          <div class="y-label">Annual yield</div>
+          <div class="y-value" id="yieldAnnual">$0</div>
+          <div class="y-sub" id="yieldNetFee">net fee: —</div>
+        </div>
+        <div class="yield-box">
+          <div class="y-label">Monthly yield</div>
+          <div class="y-value" id="yieldMonthly">$0</div>
+          <div class="y-sub">passive income</div>
+        </div>
+      </div>
+
+      <p class="roi-line" id="roiLine"></p>
+    </div>
+  </section>
+
+  <section id="ladder-section">
+    <div class="section-label">02 / The Ladder</div>
+    <h2>Levels of rich 🪜</h2>
+    <p class="section-sub">How many STRIKE you'd need — at the volume you picked above — for each lifestyle's annual yield. Rungs light up when your holdings clear them.</p>
+    <div class="ladder" id="ladder"></div>
+  </section>
+
+  <section id="scenarios">
+    <div class="section-label">03 / The Scenarios</div>
+    <h2>Yield per 1,000 STRIKE at every milestone</h2>
+    <p class="section-sub">Fee compression and maker rebates are applied per tier — higher volume means lower net fees per dollar, but vastly more dollars.</p>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Daily Vol</th>
+            <th>Net Fee</th>
+            <th>1K Annual</th>
+            <th>1K Monthly</th>
+            <th>ROI on cost*</th>
+          </tr>
+        </thead>
+        <tbody id="scenarioBody"></tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--faint);margin-top:10px">*ROI on cost assumes 1,000 STRIKE purchased at the current price set in config (default $1.07).</p>
+  </section>
+
+  <section id="methodology">
+    <div class="section-label">04 / The Math</div>
+    <h2>No black box. Here's the formula.</h2>
+    <p class="section-sub">Every number on this page comes from this calculation. Challenge any step — that's the point.</p>
+
+    <div class="formula-card">
+      <div class="formula-block">Annual yield = Daily Volume × 365
+             × <span class="hl">Net Fee Rate</span>
+             × ( Your STRIKE ÷ <span class="hl">Total Staked</span> )
+
+Net Fee Rate = Tiered taker fee − Maker rebate
+             (compresses from 0.035% → 0.024% as volume scales)</div>
+
+      <ul class="assumption-list">
+        <li><strong>V2 data only.</strong> V1 revenue exists and pays stakers too, but won't scale like V2 — excluding it keeps the model conservative. Whatever V1 pays is bonus.</li>
+        <li><strong>Fee rate confirmed from dashboard:</strong> $24,739 revenue ÷ $69,627,002 volume = 0.03554% blended.</li>
+        <li><strong>Fee compression applied.</strong> As volume grows, traders qualify for lower fee tiers (Tier 0: 0.080% → Tier 6: 0.028%). The blended rate falls accordingly.</li>
+        <li><strong>Maker rebates subtracted.</strong> Pro market makers earn rebates (up to −0.010%), reducing net revenue to stakers at scale.</li>
+        <li><strong>Staking participation: 84.5%</strong> of circulating supply (≈19.93M of 23.59M STRIKE). Non-custodial — tokens never leave your wallet.</li>
+        <li><strong>Known unknown:</strong> staked-STRIKE fee discounts may further compress staker revenue. Not yet confirmed — treat these numbers as the pre-discount baseline.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="disclaimer">
+    <strong style="color:var(--amber)">⚠ Not financial advice.</strong> This is a community-built model anchored to publicly visible Strike Finance V2 dashboard data. Yield fluctuates with volume, staking participation, and fee structure changes. Past performance ≠ future results. DYOR. Crypto is risky — never invest more than you can afford to lose.
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Built by an Elite Striker 🟢 · Data snapshot: <span id="dataDate">June 2026</span><br>
+    Protocol: <a href="https://app.strikefinance.org" rel="noopener">app.strikefinance.org</a> · Docs: <a href="https://docs.strikefinance.org" rel="noopener">docs.strikefinance.org</a><br>
+    Open source — fork it, improve it, verify the math.
+  </div>
+</footer>
+
+<script>
+/* ================================================================
+   CONFIG — static fallback values. The dashboard attempts to fetch
+   live data from the Strike Statistics API on load and overrides
+   these when successful. If the fetch fails (CORS, offline), the
+   static snapshot below is used.
+
+   API docs: Strike Perpetuals Statistics API
+   Base URL: https://api.strikefinance.org/stat
+   ================================================================ */
+const CONFIG = {
+  v2AllTimeVolume: 69627002,     // USD, fallback from dashboard snapshot
+  v2AllTimeRevenue: 24739,       // USD, fallback
+  v2DaysLive: 55,                // approx days since V2 launch (Apr 17)
+  currentDailyVolume: 3500000,   // USD, fallback recent run-rate
+  circulatingSupply: 23590000,   // STRIKE
+  stakingParticipation: 0.845,   // 84.5% — not in public API yet, static
+  currentPriceUSD: 1.07,         // STRIKE price for ROI math
+  dataDate: "June 11, 2026 (static snapshot)"
+};
+
+const STATS_API = "https://api.strikefinance.org/stat";
+
+/* Fetch live platform data; silently fall back to static CONFIG on failure */
+async function loadLiveData() {
+  try {
+    const [summaryRes, volumesRes] = await Promise.all([
+      fetch(STATS_API + "/v1/dashboard/summary"),
+      fetch(STATS_API + "/v1/dashboard/volumes")
+    ]);
+    if (!summaryRes.ok || !volumesRes.ok) throw new Error("API status " + summaryRes.status);
+
+    const summary = await summaryRes.json();
+    const volumes = await volumesRes.json();
+
+    // Override all-time totals from /summary
+    if (summary.total_volume_usd) CONFIG.v2AllTimeVolume = parseFloat(summary.total_volume_usd);
+    if (summary.total_revenue_usd) CONFIG.v2AllTimeRevenue = parseFloat(summary.total_revenue_usd);
+
+    // Compute current daily pace = average of last 7 days from /volumes
+    // Series format: [[timestamp_ms, symbol, value], ...]
+    const series = volumes.total_volume_daily || Object.values(volumes)[0] || [];
+    if (series.length) {
+      const byDay = {};
+      series.forEach(row => {
+        const ts = row[0];
+        const value = parseFloat(row[row.length - 1]) || 0;
+        byDay[ts] = (byDay[ts] || 0) + value;
+      });
+      const days = Object.keys(byDay).map(Number).sort((a, b) => b - a).slice(0, 7);
+      if (days.length) {
+        const avg = days.reduce((s, d) => s + byDay[d], 0) / days.length;
+        if (avg > 0) CONFIG.currentDailyVolume = avg;
+      }
+    }
+
+    CONFIG.dataDate = new Date().toLocaleDateString("en-US",
+      { year: "numeric", month: "long", day: "numeric" }) + " (live)";
+
+    // Re-render everything with live numbers
+    renderStats();
+    renderTable();
+    renderCalc();
+  } catch (e) {
+    console.warn("Live data unavailable, using static snapshot:", e.message);
+  }
+}
+
+const TOTAL_STAKED = CONFIG.circulatingSupply * CONFIG.stakingParticipation;
+const BLENDED_FEE = CONFIG.v2AllTimeRevenue / CONFIG.v2AllTimeVolume;
+
+/* Tiered net fee: taker fee compresses + maker rebate grows with volume */
+function netFeeRate(dailyVolUSD) {
+  const v = dailyVolUSD / 1e6;
+  let taker, rebate;
+  if      (v < 2)   { taker = 0.00036; rebate = 0.00001; }
+  else if (v < 20)  { taker = 0.00035; rebate = 0.00001; }
+  else if (v < 50)  { taker = 0.00033; rebate = 0.00002; }
+  else if (v < 100) { taker = 0.00031; rebate = 0.00003; }
+  else if (v < 200) { taker = 0.00030; rebate = 0.00004; }
+  else              { taker = 0.00029; rebate = 0.00005; }
+  return taker - rebate;
+}
+
+function annualYield(holdings, dailyVolUSD) {
+  return dailyVolUSD * 365 * netFeeRate(dailyVolUSD) * (holdings / TOTAL_STAKED);
+}
+
+/* Slider mapping 0–100 → $1M–$250M exponential */
+function sliderToVolume(t) {
+  const minV = 1e6, maxV = 250e6;
+  return minV * Math.pow(maxV / minV, t / 100);
+}
+
+function scenarioName(dailyVolUSD) {
+  const v = dailyVolUSD / 1e6;
+  if (v < 2.5)  return "Early days";
+  if (v < 8)    return "Current pace";
+  if (v < 45)   return "Rank 20 low";
+  if (v < 85)   return "Rank 20 mid";
+  if (v < 160)  return "Rank 20 high";
+  return "Established (top 10 floor)";
+}
+
+function fmtUSD(v) {
+  if (v >= 1e6) return "$" + (v / 1e6).toFixed(v >= 10e6 ? 1 : 2) + "M";
+  if (v >= 1e3) return "$" + (v / 1e3).toFixed(v >= 100e3 ? 0 : 1) + "K";
+  if (v >= 100) return "$" + Math.round(v).toLocaleString();
+  if (v >= 1)   return "$" + v.toFixed(2);
+  return "$" + v.toFixed(3);
+}
+function fmtTokens(v) {
+  if (v >= 1e6) return (v / 1e6).toFixed(2) + "M";
+  return Math.round(v).toLocaleString();
+}
+function fmtPct(v) { return (v * 100).toFixed(4) + "%"; }
+
+const RICH_TIERS = [
+  { emoji: "👟", name: "New kicks",     target: 500,     note: "fresh sneakers every year" },
+  { emoji: "🏍️", name: "Motorcycle",    target: 5000,    note: "annual bike-payment money" },
+  { emoji: "🚗", name: "New car",       target: 15000,   note: "a real car payment, covered" },
+  { emoji: "🏠", name: "House payment", target: 60000,   note: "mortgage territory" },
+  { emoji: "🏎️", name: "Lambo",         target: 250000,  note: "the meme made real" },
+  { emoji: "🛥️", name: "Yacht",         target: 1000000, note: "generational flex" }
+];
+
+function getTableScenarios() {
+  return [
+    { label: "Today (V2 avg)", vol: CONFIG.v2AllTimeVolume / CONFIG.v2DaysLive, note: "all-time average" },
+    { label: "Current pace",   vol: CONFIG.currentDailyVolume, note: "recent 7-day run-rate" },
+    { label: "Rank 20 low",    vol: 33e6,  note: "DefiLlama bottom of top 20" },
+    { label: "Rank 20 mid",    vol: 66e6,  note: "" },
+    { label: "Rank 20 high",   vol: 100e6, note: "" },
+    { label: "Established",    vol: 250e6, note: "top 10 floor" }
+  ];
+}
+
+const $ = id => document.getElementById(id);
+
+function renderStats() {
+  $("statVolume").textContent  = fmtUSD(CONFIG.v2AllTimeVolume);
+  $("statRevenue").textContent = fmtUSD(CONFIG.v2AllTimeRevenue);
+  $("statFeeRate").textContent = (BLENDED_FEE * 100).toFixed(4) + "%";
+  $("statDaily").textContent   = fmtUSD(CONFIG.currentDailyVolume);
+  $("statStaked").textContent  = fmtTokens(TOTAL_STAKED);
+  $("dataDate").textContent    = CONFIG.dataDate;
+}
+
+function renderCalc() {
+  const holdings = Math.max(1, parseFloat($("holdingsInput").value) || 0);
+  const t = parseFloat($("volSlider").value);
+  const vol = sliderToVolume(t);
+
+  $("volSlider").style.setProperty("--fill", t + "%");
+  $("volReadout").textContent = fmtUSD(vol) + "/day";
+  $("scenarioTag").textContent = scenarioName(vol);
+
+  const annual = annualYield(holdings, vol);
+  $("yieldAnnual").textContent  = fmtUSD(annual);
+  $("yieldMonthly").textContent = fmtUSD(annual / 12);
+  $("yieldDaily").textContent   = fmtUSD(annual / 365);
+  $("yieldNetFee").textContent  = "net fee: " + (netFeeRate(vol) * 100).toFixed(3) + "%";
+
+  const cost = holdings * CONFIG.currentPriceUSD;
+  const roi = cost > 0 ? (annual / cost) * 100 : 0;
+  $("roiLine").innerHTML =
+    fmtTokens(holdings) + " STRIKE costs ~<strong>" + fmtUSD(cost) + "</strong> today → " +
+    "<strong>" + roi.toFixed(1) + "%</strong> annual yield on cost at this volume. " +
+    "Your share of all fees: <strong>" + fmtPct(holdings / TOTAL_STAKED) + "</strong>";
+
+  renderLadder(holdings, vol);
+}
+
+function renderLadder(holdings, vol) {
+  const ladder = $("ladder");
+  ladder.innerHTML = "";
+  const perTokenAnnual = annualYield(1, vol);
+
+  RICH_TIERS.forEach(tier => {
+    const needed = tier.target / perTokenAnnual;
+    const cost = needed * CONFIG.currentPriceUSD;
+    const unlocked = holdings >= needed;
+
+    const div = document.createElement("div");
+    div.className = "rung" + (unlocked ? " unlocked" : "");
+    div.innerHTML =
+      '<div class="emoji" aria-hidden="true">' + tier.emoji + '</div>' +
+      '<div>' +
+        '<div class="r-name">' + tier.name + (unlocked ? '<span class="unlocked-badge">Unlocked</span>' : '') + '</div>' +
+        '<div class="r-target">' + fmtUSD(tier.target) + '/yr — ' + tier.note + '</div>' +
+      '</div>' +
+      '<div class="r-need">' +
+        '<span class="n">' + fmtTokens(needed) + '</span> STRIKE' +
+        '<span class="cost">≈ ' + fmtUSD(cost) + ' at today\'s price</span>' +
+      '</div>';
+    ladder.appendChild(div);
+  });
+}
+
+function renderTable() {
+  const body = $("scenarioBody");
+  body.innerHTML = "";
+  getTableScenarios().forEach(s => {
+    const a1 = annualYield(1000, s.vol);
+    const roi = (a1 / (1000 * CONFIG.currentPriceUSD)) * 100;
+    const tr = document.createElement("tr");
+    if (s.label === "Current pace") tr.className = "highlight";
+    tr.innerHTML =
+      '<td>' + s.label + (s.note ? '<span class="tier-note">' + s.note + '</span>' : '') + '</td>' +
+      '<td>' + fmtUSD(s.vol) + '</td>' +
+      '<td>' + (netFeeRate(s.vol) * 100).toFixed(3) + '%</td>' +
+      '<td class="green-text">' + fmtUSD(a1) + '</td>' +
+      '<td>' + fmtUSD(a1 / 12) + '</td>' +
+      '<td>' + roi.toFixed(1) + '%</td>';
+    body.appendChild(tr);
+  });
+}
+
+renderStats();
+renderTable();
+renderCalc();
+$("holdingsInput").addEventListener("input", renderCalc);
+$("volSlider").addEventListener("input", renderCalc);
+loadLiveData(); // attempt live API fetch — falls back to static snapshot silently
+</script>
+
+</body>
+</html>
